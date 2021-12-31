@@ -48,7 +48,8 @@ class RX():
 
     def publish(self, data, ts, frame_cnt):
         hdr = struct.pack('<BQHb', 3, ts, len(data), frame_cnt)
-        pl = b''.join((hdr, data))
+        #pl = b''.join((hdr, data))
+        pl = data
         #self.pub.send(pl)
         self.pub.publish("csi/raw",pl)
 
