@@ -1,34 +1,22 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
+from PyQt5.QtWidgets import QApplication, QWidget,  QGridLayout
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 import pyqtgraph as pg
 import time, os, sys
 import argparse
 import pynng
 import numpy as np
-import scipy
-import warnings
 import struct
-warnings.filterwarnings('ignore')
 
-
-#sys.path.append(os.path.join(dir_path, '../csi_magic/'))
-#import snr_engine
+import pyaudio
 
 #fix ctrl+c
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-
-from scipy.signal import find_peaks
-import pyaudio
-
 def norm(h):
     h = h / np.max(h, axis=-1)[:, np.newaxis]
     h[~np.isfinite(h)] = 0
     return h
-
-
 
 class Main(QWidget):
     def __init__(self):
@@ -55,8 +43,6 @@ class Main(QWidget):
         self.plot.setData(h_amp)
         self.plot2.setData(th_amp)
 
-def P2R(radii, angles):
-    return radii * np.exp(1j*angles)
 
 
 fx256 = np.ones(256, dtype=bool)
@@ -75,7 +61,6 @@ class Worker(QThread):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        #self.magic = snr_engine.Snr()
 
         p = pyaudio.PyAudio()
         self.stream = p.open(format=pyaudio.paInt16,
@@ -97,7 +82,6 @@ class Worker(QThread):
     def run(self):
         cnt = 0
         last = time.time()
-        peaks = []
 
         collect = 30
         vault = []
@@ -126,22 +110,10 @@ class Worker(QThread):
             pl = np.abs(pl)
             pl = np.expand_dims(pl, axis=0)
             h_amp = norm(pl)[0]
-            #h = csi.data
-            #np.save('h', h, allow_pickle=False)
-            #sys.exit(1)
-            #normed_h = P2R(h_amp, np.angle(h))
-            #mid = csi.mid if hasattr(csi, 'mid') else 0
-            #nh, snrs, th = self.magic.snr_rec_theta(normed_h, mid)
-            #th_mag = np.abs(th[:, :8])
-
-            #peaks2, _ = find_peaks(h_amp, prominence=0.05)      # BEST!
-            #if len(peaks2) == 0 or  np.max(peaks2) >=52: #something went seriously wrong
-            #    print('WARNING', peaks2)
-            #    continue
 
             th_mag = np.abs(np.fft.ifft(h_amp))[1:9]
-            peaks.append(th_mag[0])
 
+            #peaks.append(th_mag[0])
             #th_mag = np.zeros(52)
             #th_mag[peaks2] = 1
 
