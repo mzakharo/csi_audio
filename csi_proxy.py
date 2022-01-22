@@ -1,7 +1,7 @@
 import socket
 import struct
 import time
-#import pynng
+import pynng
 import paho.mqtt.client as mqtt
 
 UDP_IP = "0.0.0.0"
@@ -9,13 +9,13 @@ UDP_PORT = 5500
 SO_TIMESTAMPNS = 35
 SOF_TIMESTAMPING_RX_SOFTWARE = (1 << 3)
 
-#address = f'tcp://*:6970'
+address = f'tcp://*:6970'
 class RX():
     def __init__(self, log=None, poll=None):
         self.r = None
-        #self.pub = pynng.Pub0(listen=address, send_buffer_size=50, send_timeout=1000)
-        self.pub =  mqtt.Client("csi_proxy")
-        self.pub.connect("127.0.0.1")
+        self.pub = pynng.Pub0(listen=address, send_buffer_size=50, send_timeout=1000)
+        #self.pub =  mqtt.Client("csi_proxy")
+        #self.pub.connect("127.0.0.1")
         
         r = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         r.setsockopt(socket.SOL_SOCKET, SO_TIMESTAMPNS, SOF_TIMESTAMPING_RX_SOFTWARE)
@@ -50,8 +50,8 @@ class RX():
         hdr = struct.pack('<BQHb', 3, ts, len(data), frame_cnt)
         #pl = b''.join((hdr, data))
         pl = data
-        #self.pub.send(pl)
-        self.pub.publish("csi/raw",pl)
+        self.pub.send(pl)
+        #self.pub.publish("csi/raw",pl)
 
 
     def close(self):
